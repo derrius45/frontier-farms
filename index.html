@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontier Farms — Operations Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --soil: #1E1509;
+  --earth: #2C1F0E;
+  --field: #3D2B14;
+  --straw: #C8A96E;
+  --wheat: #E8CC8A;
+  --leaf: #7A9E5C;
+  --corn: #F0C040;
+  --cream: #F5EDD8;
+  --fog: #C8BCA8;
+  --accent: #C8603A;
+  --text-muted: #8A7A60;
+  --border: rgba(200,169,110,0.18);
+  --card-bg: rgba(44,31,14,0.7);
+}
+body { background: var(--soil); color: var(--cream); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 2rem 3rem; }
+
+header { border-bottom: 1px solid var(--border); padding: 2rem 0 1.5rem; margin-bottom: 2.5rem; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.farm-name { font-family: 'Playfair Display', serif; font-size: clamp(26px,4vw,40px); font-weight: 600; color: var(--wheat); letter-spacing: -0.01em; line-height: 1; }
+.farm-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
+.live { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--leaf); letter-spacing: 0.08em; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--leaf); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 2.5rem; }
+.stat-cell { background: var(--card-bg); padding: 1.25rem 1.5rem; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--wheat); line-height: 1; }
+.stat-unit { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--straw); margin-top: 4px; }
+
+.section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+.section-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--straw); white-space: nowrap; }
+.section-line { flex: 1; height: 1px; background: var(--border); }
+.tag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
+.tag-ready { border-color: rgba(122,158,92,0.5); color: var(--leaf); }
+.tag-live { border-color: rgba(240,192,64,0.4); color: var(--corn); }
+.tag-add { border-color: rgba(200,169,110,0.3); color: var(--text-muted); }
+
+.alert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-bottom: 2.5rem; }
+.alert { background: var(--card-bg); border-radius: 8px; padding: 1rem 1.25rem; border-left: 3px solid; }
+.alert-r { border-color: var(--accent); }
+.alert-y { border-color: var(--corn); }
+.alert-g { border-color: var(--leaf); }
+.alert-lbl { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+.alert-r .alert-lbl { color: var(--accent); }
+.alert-y .alert-lbl { color: var(--corn); }
+.alert-g .alert-lbl { color: var(--leaf); }
+.alert-txt { font-size: 13px; color: var(--fog); line-height: 1.5; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; margin-bottom: 2.5rem; }
+.rcard { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem 1.25rem; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; position: relative; }
+.rcard:hover { border-color: rgba(200,169,110,0.45); background: rgba(61,43,20,0.85); transform: translateY(-1px); }
+.rcard.active { border-color: var(--straw); background: rgba(61,43,20,0.95); }
+.rcard-icon { font-size: 18px; margin-bottom: 8px; display: block; }
+.rcard-title { font-size: 13px; font-weight: 500; color: var(--cream); margin-bottom: 4px; line-height: 1.3; }
+.rcard-src { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); }
+
+/* DETAIL PANEL */
+.detail { background: rgba(44,31,14,0.5); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2.5rem; min-height: 72px; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.detail-body { flex: 1; min-width: 200px; }
+.detail-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--wheat); margin-bottom: 5px; }
+.detail-desc { font-size: 13px; color: var(--fog); line-height: 1.6; margin-bottom: 10px; }
+.detail-hint { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+/* THE ONE BUTTON */
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--straw);
+  color: var(--soil);
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.run-btn:hover { background: var(--wheat); }
+.run-btn .btn-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+  display: block;
+  margin-top: 1px;
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--field);
+  border: 1px solid var(--straw);
+  color: var(--wheat);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+footer { border-top: 1px solid var(--border); padding: 1.5rem 0 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.foot-note { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.06em; }
+.foot-link { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--straw); text-decoration: none; }
+.foot-link:hover { color: var(--wheat); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.f0{animation:fadeUp 0.4s ease both}
+.f1{animation:fadeUp 0.4s 0.06s ease both}
+.f2{animation:fadeUp 0.4s 0.12s ease both}
+.f3{animation:fadeUp 0.4s 0.18s ease both}
+.f4{animation:fadeUp 0.4s 0.24s ease both}
+.f5{animation:fadeUp 0.4s 0.30s ease both}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="f0">
+  <div>
+    <div class="farm-name">Frontier Farms</div>
+    <div class="farm-sub">Operations Hub &mdash; De Land, Illinois &mdash; 2026 Season</div>
+  </div>
+  <div class="live"><span class="live-dot"></span><span id="clock">—</span></div>
+</header>
+
+<div class="stat-row f1">
+  <div class="stat-cell">
+    <div class="stat-label">Corn acres</div>
+    <div class="stat-value">8,778</div>
+    <div class="stat-unit">FF + TF combined</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Soybean acres</div>
+    <div class="stat-value">7,051</div>
+    <div class="stat-unit">FF + TF combined</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Seed units ordered</div>
+    <div class="stat-value">3,840</div>
+    <div class="stat-unit">corn 2026</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Brands</div>
+    <div class="stat-value">6</div>
+    <div class="stat-unit">Channel · Wyffels · Pioneer +3</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Gaps flagged</div>
+    <div class="stat-value" style="color:var(--accent)">3</div>
+    <div class="stat-unit">W7945 · C214-78 · C215-70</div>
+  </div>
+</div>
+
+<div class="section-head f2">
+  <span class="section-title">Active alerts</span>
+  <span class="section-line"></span>
+</div>
+
+<div class="alert-grid f2">
+  <div class="alert alert-r">
+    <div class="alert-lbl">Seed shortfall</div>
+    <div class="alert-txt">W7945 TRE — Sipple field needs ~97 units beyond current positioning</div>
+  </div>
+  <div class="alert alert-y">
+    <div class="alert-lbl">Order needed</div>
+    <div class="alert-txt">1 box W7945 + 2 boxes C214-78 still to be placed per positioning notes</div>
+  </div>
+  <div class="alert alert-y">
+    <div class="alert-lbl">Overage</div>
+    <div class="alert-txt">C215-70 over-positioned ~6 units across Nearing 400 / PARR fields</div>
+  </div>
+  <div class="alert alert-g">
+    <div class="alert-lbl">Soybeans</div>
+    <div class="alert-txt">FF + TF soybean varieties fully positioned across all fields</div>
+  </div>
+</div>
+
+<div class="section-head f3">
+  <span class="section-title">Reports — ready now</span>
+  <span class="section-line"></span>
+  <span class="tag tag-ready">Seed order data</span>
+</div>
+<div class="card-grid f3" id="g1"></div>
+
+<div class="section-head f4">
+  <span class="section-title">Reports — live conditions</span>
+  <span class="section-line"></span>
+  <span class="tag tag-live">Weather + fields</span>
+</div>
+<div class="card-grid f4" id="g2"></div>
+
+<div class="section-head f5">
+  <span class="section-title">Reports — unlock with more data</span>
+  <span class="section-line"></span>
+  <span class="tag tag-add">Expandable</span>
+</div>
+<div class="card-grid f5" id="g3"></div>
+
+<div class="detail" id="detail">
+  <div class="detail-hint">Select any report card above — then click the button to open your Frontier Farms agent with the right prompt ready to paste.</div>
+</div>
+
+<footer>
+  <div class="foot-note">Frontier Farms &mdash; De Land, IL &bull; 2026 Season &bull; Built with Claude AI</div>
+  <a class="foot-link" href="https://claude.ai/project/019dc98d-3beb-753f-99a3-2641c3bd744d" target="_blank">Open Farm Agent ↗</a>
+</footer>
+
+</div>
+
+<div class="toast" id="toast">Prompt copied — paste it into the agent</div>
+
+<script>
+const PROJECT = 'https://claude.ai/project/019dc98d-3beb-753f-99a3-2641c3bd744d';
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+
+    ' · '+n.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+tick(); setInterval(tick,30000);
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function runReport(prompt){
+  navigator.clipboard.writeText(prompt).then(()=>{
+    showToast('Prompt copied — paste it into the agent');
+    setTimeout(()=>window.open(PROJECT,'_blank'),200);
+  }).catch(()=>{
+    window.open(PROJECT,'_blank');
+    showToast('Open the agent and type your request');
+  });
+}
+
+const ready=[
+  {i:'📊',t:'Seed positioning tracker',s:'Seed Order xlsx',d:'Every field: required vs. positioned. Flags shortfalls (red) and overages (yellow). 3 active gaps currently flagged.',p:'Build me the seed positioning tracker report — show all fields where positioned ≠ required, flag shortfalls in red and overages in yellow.'},
+  {i:'🌽',t:'Hybrid/variety by field',s:'Seed Order xlsx',d:'Full field list with hybrid, trait, RM, seed rate, and VPI for all ~70 corn and ~50 soy fields.',p:'Build a hybrid and variety by field report for all corn and soybean fields, sortable by rotation and VPI.'},
+  {i:'🏷️',t:'Brand concentration',s:'Seed Order xlsx',d:'Channel 35%, Wyffels 33%, Pioneer 24%. Flags diversity risk and rep negotiation leverage by brand.',p:'Generate a brand concentration risk report for our 2026 corn seed order.'},
+  {i:'📅',t:'RM distribution',s:'Seed Order xlsx',d:'RM 109–118 spread. 33% of acres at RM 114–115. Harvest timing overlap and planting window analysis.',p:'Show me the relative maturity distribution for our 2026 corn order and flag any harvest timing risks.'},
+  {i:'🧬',t:'Trait package summary',s:'Seed Order xlsx',d:'Vorceed, TRE, STX, VT2P, Qrome, Duracade, AM by acres and %. Aligns herbicide and resistance programs.',p:'Generate a trait package summary for 2026 corn broken down by acres and percentage.'},
+  {i:'📦',t:'Carryover & inventory',s:'Seed Order xlsx',d:'Carryover flagged on C214-78 (30 units). Prevents double-ordering seed already on hand.',p:'Show me all carryover seed inventory for 2026 and flag anything we may have double-ordered.'},
+  {i:'🚜',t:'Planting priority queue',s:'Seed Order xlsx',d:'Fields ranked by rotation risk, VPI high to low, and acres. Dispatcher tool for planting season crunch.',p:'Build a planting priority queue for spring 2026 — sort by rotation risk, VPI high to low, and field size.'},
+  {i:'🌱',t:'Seed bean vs. commercial',s:'Seed Order xlsx',d:'SEED BEANS vs. commercial soy by field with bin assignments mapped. Prevents harvest mix-ups.',p:'Generate a seed bean vs. commercial soybean split report with bin assignments for harvest logistics.'},
+  {i:'🤝',t:'Rep/company settlement',s:'Seed Order xlsx',d:'Orders by rep: DL (Stine), Randy (Xitavo), Remington. Invoice verification tool at season-end.',p:'Build a rep and company seed order settlement summary for 2026 invoice verification.'},
+];
+
+const live=[
+  {i:'🌤️',t:'Daily farm report',s:'Weather + fields',d:'Weather, spray/plant viability, field status, equipment flags, and ranked action list for today.',p:'Daily report'},
+  {i:'💨',t:'Spray window checker',s:'Weather API',d:'Wind, temp, rain window check for De Land IL. Outputs go/no-go with next viable application window.',p:'Check spray window conditions for today and give me the next viable application window for De Land IL.'},
+  {i:'🌡️',t:'Planting conditions',s:'Weather + GDDs',d:'Soil temp, forecast, and GDD accumulation. Flags optimal planting window open/close for De Land.',p:'What are current planting conditions and when is the optimal planting window opening for De Land IL?'},
+];
+
+const expand=[
+  {i:'📈',t:'Yield history by hybrid',s:'Add yield CSV',d:'Compare hybrid performance across fields and years. Requires historical yield CSV or FMIS export.',p:'I want to build a yield history by hybrid report — what data do I need to provide?'},
+  {i:'💰',t:'Seed cost per acre',s:'Add invoice data',d:'Cost per unit + seeding rate = $ per acre by field. Requires seed invoice totals.',p:'How do I set up a seed cost per acre report for 2026?'},
+  {i:'🔧',t:'Equipment service tracker',s:'Add equipment log',d:'Hours, service intervals, and upcoming maintenance flags by machine.',p:'How do I set up an equipment service tracker for Frontier Farms?'},
+  {i:'🗺️',t:'Multi-year rotation map',s:'Add prior years',d:'Full field rotation history. Flags corn-on-corn risk and disease pressure patterns.',p:'What data do I need to build a multi-year rotation map for all Frontier Farms fields?'},
+  {i:'🚛',t:'Harvest logistics planner',s:'Add grain cart data',d:'Field sequence, bin assignments, estimated bushels. Needs yield estimates + bin capacities.',p:'What do I need to build a harvest logistics planner for Frontier Farms?'},
+];
+
+function build(data, id){
+  const el=document.getElementById(id);
+  data.forEach(item=>{
+    const c=document.createElement('div');
+    c.className='rcard';
+    c.innerHTML=`<span class="rcard-icon">${item.i}</span><div class="rcard-title">${item.t}</div><div class="rcard-src">${item.s}</div>`;
+    c.onclick=()=>{
+      document.querySelectorAll('.rcard').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      document.getElementById('detail').innerHTML=`
+        <div class="detail-body">
+          <div class="detail-title">${item.i} ${item.t}</div>
+          <div class="detail-desc">${item.d}</div>
+        </div>
+        <button class="run-btn" onclick="runReport('${item.p.replace(/'/g,"\\'")}')">
+          Open Farm Agent
+          <span class="btn-sub">copies prompt · opens project</span>
+        </button>`;
+    };
+    el.appendChild(c);
+  });
+}
+
+build(ready,'g1');
+build(live,'g2');
+build(expand,'g3');
+</script>
+</body>
+</html>
